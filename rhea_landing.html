@@ -1,0 +1,979 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RHEA — Sovereign AI Gateway | Titan Universal AI</title>
+<meta name="description" content="Mesh-native sovereign AI that runs on your hardware, learns your knowledge, and never sends your data to anyone else's server.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --black:    #050508;
+    --deep:     #0a0a12;
+    --panel:    #0f0f1a;
+    --border:   #1e1e30;
+    --muted:    #3a3a5c;
+    --text:     #c8c8e0;
+    --bright:   #e8e8f8;
+    --gold:     #d4a853;
+    --gold-dim: #8a6a2a;
+    --cyan:     #4af0d0;
+    --cyan-dim: #1a6050;
+    --red:      #f05050;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Space Mono', monospace;
+    background: var(--black);
+    color: var(--text);
+    overflow-x: hidden;
+    cursor: crosshair;
+  }
+
+  /* ---- NOISE OVERLAY ---- */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 1000;
+    opacity: 0.4;
+  }
+
+  /* ---- GRID BACKGROUND ---- */
+  .grid-bg {
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(74,240,208,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(74,240,208,0.03) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none;
+  }
+
+  /* ---- NAV ---- */
+  nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    padding: 20px 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border);
+    background: rgba(5,5,8,0.85);
+    backdrop-filter: blur(12px);
+  }
+
+  .nav-logo {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 1.1rem;
+    color: var(--bright);
+    letter-spacing: 0.15em;
+  }
+  .nav-logo span { color: var(--cyan); }
+
+  .nav-links { display: flex; gap: 32px; }
+  .nav-links a {
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--cyan); }
+
+  /* ---- HERO ---- */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 140px 40px 80px;
+    position: relative;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .hero-tag {
+    display: inline-block;
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--cyan);
+    border: 1px solid var(--cyan-dim);
+    padding: 6px 16px;
+    margin-bottom: 48px;
+    animation: fadeUp 0.8s ease both;
+  }
+
+  .hero-title {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: clamp(3.5rem, 10vw, 8rem);
+    line-height: 0.9;
+    color: var(--bright);
+    letter-spacing: -0.03em;
+    animation: fadeUp 0.8s 0.1s ease both;
+  }
+
+  .hero-title .accent { color: var(--gold); }
+  .hero-title .thin {
+    font-weight: 400;
+    color: var(--muted);
+    font-size: 0.5em;
+    display: block;
+    letter-spacing: 0.05em;
+    margin-top: 12px;
+  }
+
+  .hero-sub {
+    margin-top: 48px;
+    max-width: 560px;
+    font-size: 0.85rem;
+    line-height: 1.9;
+    color: var(--text);
+    animation: fadeUp 0.8s 0.2s ease both;
+  }
+
+  .hero-sub strong { color: var(--bright); }
+
+  .hero-cta {
+    margin-top: 56px;
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    animation: fadeUp 0.8s 0.3s ease both;
+  }
+
+  .btn-primary {
+    display: inline-block;
+    padding: 16px 40px;
+    background: var(--gold);
+    color: var(--black);
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 0.8rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    text-decoration: none;
+    transition: all 0.2s;
+    cursor: pointer;
+    border: none;
+  }
+  .btn-primary:hover {
+    background: var(--bright);
+    transform: translateY(-2px);
+  }
+
+  .btn-ghost {
+    display: inline-block;
+    padding: 16px 40px;
+    border: 1px solid var(--muted);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 0.8rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    text-decoration: none;
+    transition: all 0.2s;
+  }
+  .btn-ghost:hover {
+    border-color: var(--cyan);
+    color: var(--cyan);
+  }
+
+  /* ---- TOPOLOGY VIZ ---- */
+  .topology {
+    position: absolute;
+    right: -40px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 420px;
+    opacity: 0.6;
+    animation: fadeUp 1s 0.4s ease both;
+  }
+
+  @media (max-width: 900px) { .topology { display: none; } }
+
+  /* ---- SECTION ---- */
+  section {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 100px 40px;
+  }
+
+  .section-label {
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+    max-width: 80px;
+  }
+
+  .section-title {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    color: var(--bright);
+    line-height: 1.1;
+    margin-bottom: 24px;
+  }
+
+  /* ---- PROBLEM SECTION ---- */
+  .problem-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 1px;
+    background: var(--border);
+    margin-top: 60px;
+    border: 1px solid var(--border);
+  }
+  @media (max-width: 700px) { .problem-grid { grid-template-columns: 1fr; } }
+
+  .problem-card {
+    background: var(--panel);
+    padding: 40px 32px;
+    transition: background 0.2s;
+  }
+  .problem-card:hover { background: var(--deep); }
+
+  .problem-icon {
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+    display: block;
+  }
+
+  .problem-card h3 {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 1rem;
+    color: var(--bright);
+    margin-bottom: 12px;
+    letter-spacing: 0.03em;
+  }
+
+  .problem-card p {
+    font-size: 0.75rem;
+    line-height: 1.9;
+    color: var(--muted);
+  }
+
+  /* ---- FLOW DIAGRAM ---- */
+  .flow {
+    margin-top: 60px;
+    border: 1px solid var(--border);
+    background: var(--panel);
+    padding: 48px;
+  }
+
+  .flow-title {
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 40px;
+  }
+
+  .flow-diagram {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    overflow-x: auto;
+    padding-bottom: 8px;
+  }
+
+  .flow-node {
+    flex-shrink: 0;
+    text-align: center;
+    min-width: 120px;
+  }
+
+  .flow-box {
+    border: 1px solid var(--border);
+    padding: 12px 16px;
+    font-size: 0.65rem;
+    letter-spacing: 0.08em;
+    color: var(--text);
+    background: var(--deep);
+    margin-bottom: 8px;
+  }
+
+  .flow-box.active {
+    border-color: var(--cyan);
+    color: var(--cyan);
+  }
+
+  .flow-box.gold {
+    border-color: var(--gold);
+    color: var(--gold);
+  }
+
+  .flow-label {
+    font-size: 0.55rem;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .flow-arrow {
+    flex-shrink: 0;
+    width: 40px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.8rem;
+  }
+
+  /* ---- PRICING ---- */
+  .pricing-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    margin-top: 60px;
+  }
+  @media (max-width: 900px) { .pricing-grid { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 500px) { .pricing-grid { grid-template-columns: 1fr; } }
+
+  .pricing-card {
+    background: var(--panel);
+    padding: 40px 28px;
+    position: relative;
+    transition: background 0.2s;
+  }
+  .pricing-card:hover { background: var(--deep); }
+  .pricing-card.featured { background: var(--deep); }
+  .pricing-card.featured::before {
+    content: 'MOST POPULAR';
+    position: absolute;
+    top: -1px;
+    left: 0;
+    right: 0;
+    background: var(--gold);
+    color: var(--black);
+    font-size: 0.55rem;
+    letter-spacing: 0.2em;
+    text-align: center;
+    padding: 6px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+  }
+
+  .pricing-tier {
+    font-size: 0.6rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--cyan);
+    margin-bottom: 16px;
+    display: block;
+  }
+
+  .pricing-price {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 2.2rem;
+    color: var(--bright);
+    margin-bottom: 4px;
+  }
+
+  .pricing-freq {
+    font-size: 0.65rem;
+    color: var(--muted);
+    margin-bottom: 28px;
+    display: block;
+  }
+
+  .pricing-features {
+    list-style: none;
+    margin-bottom: 36px;
+  }
+
+  .pricing-features li {
+    font-size: 0.7rem;
+    color: var(--text);
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    gap: 10px;
+    line-height: 1.4;
+  }
+
+  .pricing-features li::before {
+    content: '→';
+    color: var(--gold);
+    flex-shrink: 0;
+  }
+
+  .btn-tier {
+    display: block;
+    text-align: center;
+    padding: 14px;
+    border: 1px solid var(--muted);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    text-decoration: none;
+    transition: all 0.2s;
+    cursor: pointer;
+    background: none;
+    width: 100%;
+  }
+  .btn-tier:hover, .pricing-card.featured .btn-tier {
+    border-color: var(--gold);
+    color: var(--gold);
+  }
+
+  /* ---- WHO ---- */
+  .who-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    margin-top: 60px;
+  }
+  @media (max-width: 600px) { .who-grid { grid-template-columns: 1fr; } }
+
+  .who-card {
+    background: var(--panel);
+    padding: 40px 32px;
+  }
+
+  .who-card h3 {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: var(--bright);
+    margin-bottom: 16px;
+  }
+
+  .who-card p {
+    font-size: 0.75rem;
+    line-height: 1.9;
+    color: var(--muted);
+  }
+
+  .who-tag {
+    display: inline-block;
+    font-size: 0.55rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    border: 1px solid var(--gold-dim);
+    color: var(--gold);
+    padding: 4px 10px;
+    margin-bottom: 16px;
+  }
+
+  /* ---- FOUNDER ---- */
+  .founder {
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    padding: 80px 40px;
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 80px;
+    align-items: center;
+  }
+  @media (max-width: 700px) { .founder { grid-template-columns: 1fr; gap: 40px; } }
+
+  .founder-label {
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 16px;
+  }
+
+  .founder-name {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 2rem;
+    color: var(--bright);
+    margin-bottom: 8px;
+  }
+
+  .founder-title {
+    font-size: 0.7rem;
+    color: var(--cyan);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 24px;
+  }
+
+  .founder-quote {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--gold);
+    line-height: 1.4;
+    margin-bottom: 24px;
+  }
+
+  .founder-bio {
+    font-size: 0.75rem;
+    line-height: 2;
+    color: var(--muted);
+  }
+
+  /* ---- CTA SECTION ---- */
+  .cta-section {
+    text-align: center;
+    padding: 120px 40px;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  .cta-section .section-title { margin-bottom: 20px; }
+
+  .cta-section p {
+    font-size: 0.8rem;
+    line-height: 1.9;
+    color: var(--muted);
+    margin-bottom: 48px;
+  }
+
+  /* ---- FOOTER ---- */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.65rem;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+  }
+
+  footer a { color: var(--muted); text-decoration: none; }
+  footer a:hover { color: var(--cyan); }
+
+  /* ---- DIVIDER ---- */
+  .divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  /* ---- STAT ROW ---- */
+  .stat-row {
+    display: flex;
+    gap: 0;
+    border: 1px solid var(--border);
+    margin-top: 60px;
+    overflow: hidden;
+  }
+  @media (max-width: 600px) { .stat-row { flex-direction: column; } }
+
+  .stat {
+    flex: 1;
+    padding: 40px 32px;
+    border-right: 1px solid var(--border);
+    background: var(--panel);
+  }
+  .stat:last-child { border-right: none; }
+
+  .stat-num {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 2.5rem;
+    color: var(--gold);
+    display: block;
+    margin-bottom: 8px;
+  }
+
+  .stat-label {
+    font-size: 0.65rem;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  /* ---- PATENT BADGE ---- */
+  .patent-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    border: 1px solid var(--gold-dim);
+    padding: 10px 20px;
+    font-size: 0.65rem;
+    letter-spacing: 0.15em;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-top: 40px;
+  }
+
+  .patent-badge::before {
+    content: '⚑';
+    font-size: 0.9rem;
+  }
+
+  /* ---- ANIMATIONS ---- */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  .pulse { animation: pulse 2s ease-in-out infinite; }
+
+  /* ---- SCROLL REVEAL ---- */
+  .reveal {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+</style>
+</head>
+<body>
+
+<div class="grid-bg"></div>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">TITAN<span>.</span>AI / RHEA</div>
+  <div class="nav-links">
+    <a href="#how">Architecture</a>
+    <a href="#who">Who</a>
+    <a href="#pricing">Pricing</a>
+    <a href="mailto:juliushill@titanuai.com">Contact</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div style="position:relative; overflow:hidden;">
+  <div class="hero">
+    <div class="hero-tag">USPTO Patent Pending &nbsp;·&nbsp; Titan Universal AI</div>
+    <h1 class="hero-title">
+      RHEA<span class="accent">.</span>
+      <span class="thin">Sovereign AI Gateway</span>
+    </h1>
+    <p class="hero-sub">
+      Your AI. Your hardware. Your network.<br>
+      <strong>RHEA runs on your machines, learns your knowledge,
+      and stays reachable from anywhere in the world</strong> —
+      without ever sending your data to anyone else's server.
+      Automatic cloud failover. Zero rate limits. Patent pending.
+    </p>
+    <div class="hero-cta">
+      <a href="#pricing" class="btn-primary">Get RHEA</a>
+      <a href="#how" class="btn-ghost">See Architecture</a>
+    </div>
+    <div class="patent-badge">USPTO Patent Pending — Mesh-Native Sovereign AI</div>
+  </div>
+
+  <!-- SVG topology viz -->
+  <svg class="topology" viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <!-- Mesh lines -->
+    <line x1="200" y1="200" x2="80" y2="100"  stroke="#4af0d0" stroke-width="0.5" stroke-dasharray="4 4" opacity="0.4"/>
+    <line x1="200" y1="200" x2="320" y2="100" stroke="#4af0d0" stroke-width="0.5" stroke-dasharray="4 4" opacity="0.4"/>
+    <line x1="200" y1="200" x2="80" y2="300"  stroke="#4af0d0" stroke-width="0.5" stroke-dasharray="4 4" opacity="0.4"/>
+    <line x1="200" y1="200" x2="320" y2="300" stroke="#4af0d0" stroke-width="0.5" stroke-dasharray="4 4" opacity="0.4"/>
+    <line x1="200" y1="200" x2="200" y2="60"  stroke="#d4a853" stroke-width="0.5" stroke-dasharray="4 4" opacity="0.6"/>
+    <line x1="80"  y1="100" x2="320" y2="100" stroke="#1e1e30" stroke-width="0.5"/>
+    <line x1="80"  y1="300" x2="320" y2="300" stroke="#1e1e30" stroke-width="0.5"/>
+    <!-- Center node -->
+    <circle cx="200" cy="200" r="28" fill="#0a0a12" stroke="#4af0d0" stroke-width="1.5"/>
+    <text x="200" y="196" text-anchor="middle" fill="#4af0d0" font-size="8" font-family="Space Mono" letter-spacing="1">RHEA</text>
+    <text x="200" y="208" text-anchor="middle" fill="#4af0d0" font-size="7" font-family="Space Mono" opacity="0.6">GATEWAY</text>
+    <!-- Top node -->
+    <circle cx="200" cy="60" r="18" fill="#0a0a12" stroke="#d4a853" stroke-width="1"/>
+    <text x="200" y="64" text-anchor="middle" fill="#d4a853" font-size="7" font-family="Space Mono">WEB</text>
+    <!-- Corner nodes -->
+    <circle cx="80"  cy="100" r="16" fill="#0a0a12" stroke="#1e1e30" stroke-width="1"/>
+    <text x="80"  y="104" text-anchor="middle" fill="#3a3a5c" font-size="6" font-family="Space Mono">PHONE</text>
+    <circle cx="320" cy="100" r="16" fill="#0a0a12" stroke="#1e1e30" stroke-width="1"/>
+    <text x="320" y="104" text-anchor="middle" fill="#3a3a5c" font-size="6" font-family="Space Mono">LAPTOP</text>
+    <circle cx="80"  cy="300" r="16" fill="#0a0a12" stroke="#1e1e30" stroke-width="1"/>
+    <text x="80"  y="304" text-anchor="middle" fill="#3a3a5c" font-size="6" font-family="Space Mono">LOCAL</text>
+    <circle cx="320" cy="300" r="16" fill="#0a0a12" stroke="#d4a853" stroke-width="1"/>
+    <text x="320" y="304" text-anchor="middle" fill="#d4a853" font-size="6" font-family="Space Mono">CLOUD</text>
+    <!-- Pulse rings -->
+    <circle cx="200" cy="200" r="40" stroke="#4af0d0" stroke-width="0.5" opacity="0.2" stroke-dasharray="2 4"/>
+    <circle cx="200" cy="200" r="60" stroke="#4af0d0" stroke-width="0.3" opacity="0.1" stroke-dasharray="2 8"/>
+  </svg>
+</div>
+
+<!-- PROBLEM -->
+<hr class="divider">
+<section id="problem">
+  <div class="section-label reveal">The Problem</div>
+  <h2 class="section-title reveal">Every AI tool sends<br>your data somewhere else.</h2>
+
+  <div class="problem-grid reveal">
+    <div class="problem-card">
+      <span class="problem-icon">🔓</span>
+      <h3>No Privacy</h3>
+      <p>OpenAI, Google, Anthropic — they all log your queries. Your documents, your clients, your strategy. Stored on their servers. Used for training.</p>
+    </div>
+    <div class="problem-card">
+      <span class="problem-icon">⏱</span>
+      <h3>Rate Limits</h3>
+      <p>Hit a limit and you stop. Pay more and you get more. The meter never stops running. No limits are actually unlimited.</p>
+    </div>
+    <div class="problem-card">
+      <span class="problem-icon">💸</span>
+      <h3>Enterprise Pricing</h3>
+      <p>Private AI deployments start at $50,000+. Built for Fortune 500. The communities that need privacy most can't afford it.</p>
+    </div>
+  </div>
+</section>
+
+<!-- HOW -->
+<hr class="divider">
+<section id="how">
+  <div class="section-label reveal">Architecture</div>
+  <h2 class="section-title reveal">Your data stays in<br>your network. Always.</h2>
+
+  <div class="flow reveal">
+    <div class="flow-title">// Request flow — WireGuard encrypted mesh</div>
+    <div class="flow-diagram">
+      <div class="flow-node">
+        <div class="flow-box active">YOUR DEVICE</div>
+        <div class="flow-label">any / anywhere</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node">
+        <div class="flow-box">YOUR DOMAIN</div>
+        <div class="flow-label">caddy / tls</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node">
+        <div class="flow-box active">RHEA GATEWAY</div>
+        <div class="flow-label">rag + routing</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node">
+        <div class="flow-box gold">YOUR HARDWARE</div>
+        <div class="flow-label">llama.cpp primary</div>
+      </div>
+      <div class="flow-arrow" style="font-size:0.6rem; color: var(--muted);">or<br>→</div>
+      <div class="flow-node">
+        <div class="flow-box">CLOUD FAILOVER</div>
+        <div class="flow-label">auto-switch</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="stat-row reveal">
+    <div class="stat">
+      <span class="stat-num">0</span>
+      <span class="stat-label">Bytes sent to OpenAI</span>
+    </div>
+    <div class="stat">
+      <span class="stat-num">&lt;3s</span>
+      <span class="stat-label">Failover detection</span>
+    </div>
+    <div class="stat">
+      <span class="stat-num">∞</span>
+      <span class="stat-label">Your rate limit</span>
+    </div>
+    <div class="stat">
+      <span class="stat-num">1</span>
+      <span class="stat-label">Patent pending</span>
+    </div>
+  </div>
+</section>
+
+<!-- WHO -->
+<hr class="divider">
+<section id="who">
+  <div class="section-label reveal">Who It's For</div>
+  <h2 class="section-title reveal">Built for those with<br>the most to protect.</h2>
+
+  <div class="who-grid reveal">
+    <div class="who-card">
+      <div class="who-tag">Legal</div>
+      <h3>Civil Rights Organizations & Law Firms</h3>
+      <p>Client privilege. Evidence integrity. Case strategy. None of it belongs on OpenAI's servers. RHEA keeps your most sensitive legal work on your infrastructure — forever.</p>
+    </div>
+    <div class="who-card">
+      <div class="who-tag">Education</div>
+      <h3>HBCUs & Community Colleges</h3>
+      <p>Student data. Research. Institutional knowledge. Sovereign AI infrastructure at a price point that actually makes sense for institutions that have always had to do more with less.</p>
+    </div>
+    <div class="who-card">
+      <div class="who-tag">Business</div>
+      <h3>Black-Owned Businesses</h3>
+      <p>AI that learns your business, your customers, your operations — and belongs to you. Not rented. Not metered. Not surveilled.</p>
+    </div>
+    <div class="who-card">
+      <div class="who-tag">Builders</div>
+      <h3>Solo Founders & Developers</h3>
+      <p>No rate limits. No subscription roulette. Run your own models on your own hardware, reachable anywhere, with a RAG memory layer that grows with your projects.</p>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<hr class="divider">
+<section id="pricing">
+  <div class="section-label reveal">Pricing</div>
+  <h2 class="section-title reveal">Own your AI.<br>Pay once.</h2>
+
+  <div class="pricing-grid reveal">
+    <div class="pricing-card">
+      <span class="pricing-tier">Solo</span>
+      <div class="pricing-price">$497</div>
+      <span class="pricing-freq">one-time</span>
+      <ul class="pricing-features">
+        <li>Full RHEA codebase</li>
+        <li>1hr setup call</li>
+        <li>30 days email support</li>
+        <li>All future updates</li>
+        <li>Patent-pending architecture</li>
+      </ul>
+      <a href="mailto:juliushill@titanuai.com?subject=RHEA Solo" class="btn-tier">Get Started</a>
+    </div>
+    <div class="pricing-card featured">
+      <span class="pricing-tier">Community</span>
+      <div class="pricing-price">$1,497</div>
+      <span class="pricing-freq">one-time</span>
+      <ul class="pricing-features">
+        <li>Full RHEA codebase</li>
+        <li>Managed deployment</li>
+        <li>30-day priority support</li>
+        <li>Custom domain setup</li>
+        <li>Headscale mesh config</li>
+        <li>All future updates</li>
+      </ul>
+      <a href="mailto:juliushill@titanuai.com?subject=RHEA Community" class="btn-tier">Get Started</a>
+    </div>
+    <div class="pricing-card">
+      <span class="pricing-tier">Sovereign</span>
+      <div class="pricing-price">$4,997</div>
+      <span class="pricing-freq">per year</span>
+      <ul class="pricing-features">
+        <li>Everything in Community</li>
+        <li>Ongoing managed updates</li>
+        <li>Monthly architecture review</li>
+        <li>Priority incident response</li>
+        <li>Custom model fine-tuning</li>
+      </ul>
+      <a href="mailto:juliushill@titanuai.com?subject=RHEA Sovereign" class="btn-tier">Get Started</a>
+    </div>
+    <div class="pricing-card">
+      <span class="pricing-tier">Enterprise</span>
+      <div class="pricing-price">Custom</div>
+      <span class="pricing-freq">contact us</span>
+      <ul class="pricing-features">
+        <li>Multi-node deployment</li>
+        <li>White-label licensing</li>
+        <li>Custom model training</li>
+        <li>SLA guarantee</li>
+        <li>B2B engine licensing</li>
+      </ul>
+      <a href="mailto:juliushill@titanuai.com?subject=RHEA Enterprise" class="btn-tier">Contact</a>
+    </div>
+  </div>
+</section>
+
+<!-- FOUNDER -->
+<hr class="divider">
+<div class="founder">
+  <div>
+    <div class="founder-label">The Builder</div>
+    <div class="founder-name">Julius Hill</div>
+    <div class="founder-title">Founder — Titan Universal AI</div>
+    <div style="width:60px; height:2px; background:var(--gold); margin-top:16px;"></div>
+  </div>
+  <div>
+    <div class="founder-quote">"Call those things which be not as though they were." — Romans 4:17</div>
+    <p class="founder-bio">
+      Julius Hill began coding in October 2025. Self-taught. Self-funded. Built from Atlanta.
+      Before that — years of incarceration, rebuilding from nothing, sleeping in his truck.
+      He came to AI not through a CS degree or a VC check, but through a mission:
+      to build the infrastructure his community deserves.<br><br>
+      RHEA is patent #22 of 22. 167 GitHub repositories. Zero team. Zero funding. All production.
+      The memoir is on Amazon. The AI is running on his mesh.
+    </p>
+  </div>
+</div>
+
+<!-- CTA -->
+<hr class="divider">
+<div class="cta-section reveal">
+  <div class="section-label" style="justify-content:center;">Ready</div>
+  <h2 class="section-title">Your AI.<br>Your rules.</h2>
+  <p>RHEA is available now. First 10 customers get 50% off in exchange for a case study. Spots are limited.</p>
+  <div style="display:flex; gap:20px; justify-content:center; flex-wrap:wrap;">
+    <a href="mailto:juliushill@titanuai.com?subject=RHEA - I'm Ready" class="btn-primary">Claim Your Spot</a>
+    <a href="mailto:juliushill@titanuai.com?subject=RHEA - Investor Inquiry" class="btn-ghost">Investor Inquiry</a>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div>© 2026 Titan Universal AI — Julius Hill — Atlanta, GA</div>
+  <div style="display:flex; gap:24px;">
+    <a href="https://titanuai.com">titanuai.com</a>
+    <a href="mailto:juliushill@titanuai.com">juliushill@titanuai.com</a>
+  </div>
+</footer>
+
+<script>
+  // Scroll reveal
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('visible');
+        observer.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+
+  reveals.forEach(el => observer.observe(el));
+
+  // Cursor trail (subtle)
+  document.addEventListener('mousemove', (e) => {
+    const dot = document.createElement('div');
+    dot.style.cssText = `
+      position:fixed; left:${e.clientX}px; top:${e.clientY}px;
+      width:4px; height:4px; background:#4af0d0;
+      border-radius:50%; pointer-events:none; z-index:9999;
+      transform:translate(-50%,-50%);
+      transition: opacity 0.5s; opacity:0.3;
+    `;
+    document.body.appendChild(dot);
+    setTimeout(() => { dot.style.opacity = '0'; }, 100);
+    setTimeout(() => { dot.remove(); }, 600);
+  });
+</script>
+</body>
+</html>
